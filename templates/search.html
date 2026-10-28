@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Поиск данных</h2>
+    <p>Выберите тип цветка, затем выберите конкретный цветок.</p>
+
+    <div class="search-box">
+        <label>1. Выберите тип цветка:</label>
+        <select id="typeSelect">
+            <option value="">-- Выберите тип --</option>
+            {% for t in types %}
+            <option value="{{ t.TypeID }}">{{ t.TypeName }}</option>
+            {% endfor %}
+        </select>
+
+        <label>2. Выберите цветок:</label>
+        <select id="flowerSelect" disabled>
+            <option value="">-- Сначала выберите тип --</option>
+        </select>
+    </div>
+
+    <div id="resultBox" style="display:none; margin-top: 20px;">
+        <h3>Результат поиска:</h3>
+        <table>
+            <tr><th>Название</th><th>Цена</th><th>Описание</th></tr>
+            <tr><td id="resName"></td><td id="resPrice"></td><td id="resDesc"></td></tr>
+        </table>
+    </div>
+
+    <script>
+        const typeSelect = document.getElementById('typeSelect');
+        const flowerSelect = document.getElementById('flowerSelect');
+        const resultBox = document.getElementById('resultBox');
+
+        typeSelect.addEventListener('change', function() {
+            const typeId = this.value;
+            flowerSelect.innerHTML = '<option value="">Загрузка...</option>';
+            flowerSelect.disabled = true;
+            resultBox.style.display = 'none';
+
+            if (!typeId) {
+                flowerSelect.innerHTML = '<option value="">-- Сначала выберите тип --</option>';
+                return;
+            }
+
+            fetch(`/api/get_flowers/${typeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    flowerSelect.innerHTML = '<option value="">-- Выберите цветок --</option>';
+                    if (data.length > 0) {
+                        flowerSelect.disabled = false;
+                        data.forEach(flower => {
+                            const option = document.createElement('option');
+                            option.value = flower.FlowerID;
+                            option.text = flower.FlowerName;
+                            option.dataset.price = flower.Price;
+                            option.dataset.desc = flower.Description;
+                            flowerSelect.appendChild(option);
+                        });
+                    } else {
+                        flowerSelect.innerHTML = '<option value="">Нет цветов этого типа</option>';
+                    }
+                });
+        });
+
+        flowerSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                document.getElementById('resName').innerText = selectedOption.text;
+                document.getElementById('resPrice').innerText = selectedOption.dataset.price + ' руб.';
+                document.getElementById('resDesc').innerText = selectedOption.dataset.desc;
+                resultBox.style.display = 'block';
+            } else {
+                resultBox.style.display = 'none';
+            }
+        });
+    </script>
+{% endblock %}

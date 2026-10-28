@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Ввод данных</h2>
+    <p>Заполните карточку товара. Если укажете клиента и количество, автоматически создастся заказ.</p>
+    
+    {% if success %}<div class="alert success">{{ success }}</div>{% endif %}
+    {% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+
+    <form method="POST" class="card-form">
+        <fieldset>
+            <legend>Добавление цветка</legend>
+            
+            <label>Название цветка:</label>
+            <input type="text" name="flower_name" required minlength="3" maxlength="50" placeholder="Например, Пион">
+            
+            <label>Тип цветка:</label>
+            <select name="type_id" required>
+                {% for t in types %}
+                <option value="{{ t.TypeID }}">{{ t.TypeName }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Цена (от 100 до 600):</label>
+            <input type="number" name="price" required min="100" max="600" placeholder="250">
+
+            <label>Описание:</label>
+            <input type="text" name="description" required minlength="5" maxlength="255" placeholder="Краткое описание">
+        </fieldset>
+
+        <fieldset>
+            <legend>Оформить заказ (Необязательно)</legend>
+            <label>Клиент:</label>
+            <select name="client_id">
+                <option value="">-- Не создавать заказ --</option>
+                {% for c in clients %}
+                <option value="{{ c.PersonID }}">{{ c.FullName }}</option>
+                {% endfor %}
+            </select>
+            
+            <label>Количество (шт):</label>
+            <input type="number" name="quantity" min="1" max="300" placeholder="1">
+        </fieldset>
+
+        <button type="submit">Сохранить в базу</button>
+    </form>
+{% endblock %}
