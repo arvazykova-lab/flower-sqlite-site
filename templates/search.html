@@ -11,20 +11,41 @@
             <option value="{{ t.TypeID }}">{{ t.TypeName }}</option>
             {% endfor %}
         </select>
-
         <label>2. Выберите цветок:</label>
         <select id="flowerSelect" disabled>
             <option value="">-- Сначала выберите тип --</option>
         </select>
     </div>
 
-    <div id="resultBox" style="display:none; margin-top: 20px;">
+    <div id="resultBox" style="display:none; margin-top:20px;">
         <h3>Результат поиска:</h3>
         <table>
             <tr><th>Название</th><th>Цена</th><th>Описание</th></tr>
             <tr><td id="resName"></td><td id="resPrice"></td><td id="resDesc"></td></tr>
         </table>
     </div>
+
+    <hr>
+    <h2>Поиск клиента</h2>
+    <p>Поиск выполняется по ФИО, телефону, электронной почте или адресу.</p>
+    <form method="GET" action="{{ url_for('search_page') }}" class="search-box">
+      <label for="client_q">Атрибут клиента:</label>
+      <input id="client_q" name="client_q" value="{{ client_query }}" placeholder="Введите имя, телефон, email или адрес">
+      <button type="submit">Найти клиента</button>
+    </form>
+    {% if client_query %}
+      <h3>Результаты поиска</h3>
+      {% if clients_found %}
+      <table>
+        <tr><th>ФИО</th><th>Телефон</th><th>Email</th><th>Адрес</th></tr>
+        {% for client in clients_found %}
+        <tr><td>{{ client.FullName }}</td><td>{{ client.Phone or '—' }}</td><td>{{ client.Email or '—' }}</td><td>{{ client.Address or '—' }}</td></tr>
+        {% endfor %}
+      </table>
+      {% else %}
+      <p>Клиенты не найдены.</p>
+      {% endif %}
+    {% endif %}
 
     <script>
         const typeSelect = document.getElementById('typeSelect');
@@ -36,12 +57,10 @@
             flowerSelect.innerHTML = '<option value="">Загрузка...</option>';
             flowerSelect.disabled = true;
             resultBox.style.display = 'none';
-
             if (!typeId) {
                 flowerSelect.innerHTML = '<option value="">-- Сначала выберите тип --</option>';
                 return;
             }
-
             fetch(`/api/get_flowers/${typeId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -61,7 +80,6 @@
                     }
                 });
         });
-
         flowerSelect.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             if (selectedOption.value) {
